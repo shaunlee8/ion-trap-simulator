@@ -54,5 +54,5 @@ mg = mb / 100
 T = 2e-3
 
 # Mean and std of boltzmann distribution for virtual gas
-mu = np.sqrt((8 * const.k * T)/(np.pi * mg))
-sigma = np.sqrt((const.k * T)/(2 * mg))
+mu = np.sqrt((8*k*T)/(np.pi * mg))
+sigma = np.sqrt((k * T)/(2 * mg))
