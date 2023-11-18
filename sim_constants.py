@@ -15,6 +15,7 @@ k = sc.k
 c = sc.c
 hbar = sc.hbar
 h = sc.h
+R = sc.R
 
 M = physical_constants['atomic mass constant'][0]
 mb = 138*M
@@ -36,7 +37,7 @@ wav = 493e-9
 # Laser wave number
 k_number = 2*np.pi/wav
 
-# Laser wave vector 
+# Laser wave vector?
 dx = .1
 dy = .1
 dz = .04

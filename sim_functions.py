@@ -63,7 +63,7 @@ def leap_frog(N, T, tstep, IC):
     time_elapsed : np.array
         redundant?
     trajectories : np.array
-        a (6, N, iterations) array for the trajectories of the ions at every iteration 
+        a (6*N, iterations) array for the trajectories of the ions at every iteration 
     """
     # Mass of barium?
     mb = const.mb

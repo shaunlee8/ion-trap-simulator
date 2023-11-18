@@ -113,11 +113,15 @@ def FHYP_pseudo(X,N):
 def laser_vect(V,N):
     """
     uses foote et al paper for reference, what is this?
+
+    check -> http://info.phys.unm.edu/~ideutsch/Classes/Phys500S09/Downloads/handpubl.pdf
     
     Params
     ------
-    V : ???
-    N : ???
+    V : np.array
+        a vector of ion velocities with shape (N * 3)
+    N : int
+        the number of ions in the trap
     
     Return
     ------
@@ -125,34 +129,55 @@ def laser_vect(V,N):
         a 3xN array of force vectors for N ions
     """
     # Initialize output array
-    F = np.zeros((N,3))
+    F = np.zeros((N * 3))
     
     # What are these?
-    vel = V.reshape((N,3))
-    s0 = 0.25
-    F0 = 0
+    vel = V.reshape((N, 3))
+    s0 = 2  # saturation parameter, default=0.25
     
     # Project velocity into laser direction
-    speedk = -vel.dot(const.k_vect)
-    delta = -200e6*2*np.pi+const.k_number*speedk*0
-    delta = 0
-    S = s0/(1+(2*delta/const.gamma)**2)
-    S = np.zeros((N,1))
+    speedk = -vel.dot(const.K) # shape : (N)
+    # print("V", V)
+    # print("vel", vel)
+    # print("sppeek", speedk)
+    # print("kvec", const.k_vect)
+    # print("K", const.K)
+    # delta = -200e6 * 2 * np.pi + const.k_number * speedk
+    # detuning, scalar 
+    delta = -const.gamma / 19 + speedk # shape : (N)
+    # off-resonance saturation parameter, scalar
+    S = s0 / (1 + (2 * delta / const.gamma) ** 2) # shape : (N)
+    # S = np.zeros((N,1)) # why is S set to 0?
+    # print("Sbef", S)
+    # print("deltas", delta)
+    # print("S", S)
+    # print("kron", np.kron(vel.dot(const.K), const.K))
+    # print("vel", vel)
     
-    # leave out F0 for now HUH???? its right there????
-    F0 = const.hbar*const.K*const.gamma*S/2/(1+S)
+    # velocity-independent force for zero detuning OR traveling wave
+    F0 = np.kron((const.hbar * S) / (1 + S), (0.5 * const.gamma * const.K)) # shape : (N * 3)
+    # print("F0", F0)
     F += F0
-    
-    # Calculate recoil
-    F += const.hbar*S/(1+S)*(.5*const.gamma*const.K)
+    # print("F1", F)
       
     # Flatten array
-    F += np.kron(S,const.k_vect) # what is np.kron?????
-    F = F.ravel()
+    # F += np.kron(S, const.k_vect)  # why?
+    # print("F3", F)
+    # F = F.ravel() # shape : (N * 3)
+    # print("F4", F)
     
-    # Damping coefficient
-    F.ravel() # inplace double ravel ???????
-    Beta = -const.hbar*4*s0*delta/const.gamma/(1+s0+(2*delta/const.gamma)**2)**2*np.kron(vel.dot(const.K),const.K)
-    F -= Beta*np.kron(vel.dot(const.k_vect),const.k_vect)
+    # calculate the damping coefficient
+    dg = delta / const.gamma # shape : (N)
+    # beta = -const.hbar * 4 * s0 * dg / (1 + s0 + (2 * dg) ** 2) ** 2 \
+    #     * np.kron(vel.dot(const.K), const.K)
+    beta = -const.hbar * 4 * s0 * dg / ((1 + s0 + (2 * dg) ** 2) ** 2) \
+        * np.dot(const.K, const.K)  # shape : (N)
+    # print("beta", beta)
+
+    
+    # subtract the velocity-dependent force
+    # F -= beta * np.kron(vel.dot(const.k_vect), const.k_vect)
+    F -= np.ravel(vel * beta[:, None])
+    # print("Ffinal", F)
     
     return F
